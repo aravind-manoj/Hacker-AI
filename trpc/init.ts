@@ -2,8 +2,9 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
 import { headers } from "next/headers";
-import { db } from "@/db";
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { redis } from "@/lib/redis";
 
 export const createTRPCContext = cache(async (opts?: { req?: Request }) => {
   const heads = new Headers(opts?.req?.headers ?? (await headers()));
@@ -14,6 +15,7 @@ export const createTRPCContext = cache(async (opts?: { req?: Request }) => {
   return {
     auth: authSession,
     db: db,
+    redis: redis,
   };
 });
 
