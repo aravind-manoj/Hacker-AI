@@ -1,6 +1,4 @@
-import { Terminal } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 export default function Navbar() {
@@ -8,7 +6,22 @@ export default function Navbar() {
         <nav className="fixed top-0 w-full z-50 border-b border-red-500/20 bg-[#050505]/80 backdrop-blur-md">
             <div className="container mx-auto px-6 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
-                    <Image src="/logo.svg" alt="Hacker.AI Logo" width={265} height={48} priority />
+                    <Image
+                        src="/logo_black.svg"
+                        alt="Hacker.AI Logo"
+                        width={220}
+                        height={49}
+                        priority
+                        className="h-auto w-[220px] dark:hidden"
+                    />
+                    <Image
+                        src="/logo.svg"
+                        alt="Hacker.AI Logo"
+                        width={220}
+                        height={49}
+                        priority
+                        className="hidden h-auto w-[220px] dark:block"
+                    />
                 </Link>
                 <div className="hidden md:flex items-center gap-6 font-mono text-sm text-gray-400">
                     <Link href="#features" className="hover:text-red-500 transition-colors">Features</Link>

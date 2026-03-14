@@ -1,0 +1,12 @@
+<svg width="400" height="100" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@800&display=swap');
+    .text { font-family: 'JetBrains Mono', 'Courier New', monospace; font-weight: 800; }
+  </style>
+  <text x="0" y="70" class="text" font-size="64" fill="white" letter-spacing="-1">
+    HACKER<tspan fill="#FF0000">.AI</tspan>
+  </text>
+  <rect x="0" y="85" width="280" height="4" fill="#FF0000">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+  </rect>
+</svg>

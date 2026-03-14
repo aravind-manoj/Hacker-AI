@@ -1,0 +1,29 @@
+<svg width="128" height="128" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="crimsonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feFlood flood-color="#FF0000" flood-opacity="0.8" result="flood" />
+      <feComposite in="flood" in2="blur" operator="in" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#crimsonGlow)">
+    <!-- Main Triangle -->
+    <path d="M128 40L210 180H46L128 40Z" stroke="#FF0000" stroke-width="4" fill="#0A0A0A" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Eye Shape -->
+    <path d="M90 125Q128 100 166 125Q128 150 90 125Z" fill="#050505" stroke="#FF0000" stroke-width="2">
+       <animate attributeName="stroke-opacity" values="1;0.4;1" dur="3s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- Pupil -->
+    <circle cx="128" cy="125" r="12" fill="#FF0000">
+      <animate attributeName="r" values="12;15;12" dur="1.5s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite" />
+    </circle>
+  </g>
+</svg>

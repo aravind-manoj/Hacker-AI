@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* Simple header for auth pages */}
       <div className="absolute top-0 w-full z-10 p-6">
         <Link href="/" className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity w-fit cursor-pointer">
-          <Image src="/logo_white.svg" alt="Hacker.AI Logo" width={220} height={40} priority className="w-[200px] h-auto" />
+          <Image src="/logo.svg" alt="Hacker.AI Logo" width={240} height={43} priority className="w-[240px] h-auto" />
         </Link>
       </div>
 
