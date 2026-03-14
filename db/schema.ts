@@ -7,6 +7,7 @@ export const user = pgTable("user", {
 	email: text().notNull(),
 	emailVerified: boolean("email_verified").default(false).notNull(),
 	image: text(),
+	phone: text(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
@@ -66,6 +67,7 @@ export const session = pgTable("session", {
 	unique("session_token_unique").on(table.token),
 ]);
 
+// Report
 export const report = pgTable("report", {
 	id: text().primaryKey().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -78,5 +80,64 @@ export const report = pgTable("report", {
 		columns: [table.userId],
 		foreignColumns: [user.id],
 		name: "report_user_id_fkey"
+	}).onDelete("cascade"),
+]);
+
+// Pentester
+export const attack = pgTable("attack", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true }),
+	userId: text("user_id").notNull(),
+	targetName: text("target_name"),
+	targetList: text("target_list").array(),
+	attackVectors: text("attack_vectors").array(),
+	status: text(),
+	report: text(),
+	note: text(),
+	vulnerabilities: text().array(),
+}, (table) => [
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "attacks_user_id_fkey"
+	}).onDelete("cascade"),
+]);
+
+export const attackVm = pgTable("attack_vm", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	attackId: text("attack_id").notNull(),
+	subagentId: text("subagent_id").notNull(),
+	task: text(),
+	buffer: text(),
+	status: text(),
+	completedSteps: text("completed_steps").array(),
+	findings: text().array(),
+}, (table) => [
+	foreignKey({
+		columns: [table.attackId],
+		foreignColumns: [attack.id],
+		name: "attack_vm_attack_id_fkey"
+	}).onDelete("cascade"),
+]);
+
+// System
+export const system = pgTable("system", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: text("user_id"),
+	name: text(),
+	sshHost: text("ssh_host"),
+	sshPort: text("ssh_port"),
+	sshUsername: text("ssh_username"),
+	sshPassword: text("ssh_password"),
+	sshKey: text("ssh_key"),
+	status: text(),
+}, (table) => [
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "system_user_id_fkey"
 	}).onDelete("cascade"),
 ]);

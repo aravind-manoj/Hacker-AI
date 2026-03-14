@@ -4,13 +4,14 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import { User, Mail, Lock, Phone, Loader2, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,6 +24,7 @@ export default function RegisterPage() {
         email,
         password,
         name,
+        phone,
         callbackURL: "/dashboard",
       });
 
@@ -87,6 +89,24 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-[#050505]/50 border border-red-900/30 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-all font-mono placeholder:text-gray-600"
                 placeholder="email@example.com"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-mono block">
+              Phone
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full bg-[#050505]/50 border border-red-900/30 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-all font-mono placeholder:text-gray-600"
+                placeholder="+1 234 567 8900"
                 disabled={isLoading}
               />
             </div>
