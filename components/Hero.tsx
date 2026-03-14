@@ -1,5 +1,5 @@
 import { ChevronRight, ShieldAlert, Cpu } from "lucide-react";
-import RedParticles from "./ui/RedParticles";
+import RedParticles from "./ui/red-particles";
 
 export default function Hero() {
     return (
