@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function Navbar() {
     return (
-        <nav className="fixed top-0 w-full z-50 border-b border-red-500/20 bg-[#050505]/80 backdrop-blur-md">
+        <nav className="fixed top-0 w-full z-50 border-b border-gray-300 dark:border-red-500/20 bg-white/80 dark:bg-[#050505]/80 backdrop-blur-md">
             <div className="container mx-auto px-6 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
                     <Image src="/logo.svg" alt="Hacker.AI Logo" width={265} height={48} priority />
