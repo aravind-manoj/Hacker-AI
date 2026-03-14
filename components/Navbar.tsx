@@ -15,9 +15,12 @@ export default function Navbar() {
                 <div className="hidden md:flex items-center gap-6 font-mono text-sm text-gray-400">
                     <Link href="#features" className="hover:text-red-500 transition-colors">Features</Link>
                     <Link href="#how-it-works" className="hover:text-red-500 transition-colors">Architecture</Link>
-                    <button className="px-4 py-2 border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 ml-4">
-                        Initialize
-                    </button>
+                    <Link href="/login" className="px-4 py-2 text-gray-400 hover:text-white transition-colors ml-4">
+                        Login
+                    </Link>
+                    <Link href="/register" className="px-4 py-2 border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300">
+                        Register
+                    </Link>
                 </div>
             </div>
         </nav>
