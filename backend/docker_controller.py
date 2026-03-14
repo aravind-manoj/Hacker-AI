@@ -4,6 +4,8 @@ import time
 import socket
 import re
 import pyte
+from logger import log_info, log_error
+from db_manager import DBManager
 
 class Controller:
     def __init__(self, image="ubuntu:latest", tag=None):
@@ -16,9 +18,13 @@ class Controller:
         self.buffer = ""
         self.lock = threading.Lock()
         self.running = False
+        self.db = DBManager()
+        self.last_saved_length = 0
 
     def start(self):
         """Starts the container and the persistent shell session."""
+        log_info(f"Starting container ({self.image})", agent_id=self.tag)
+        
         run_kwargs = {
             "image": self.image,
             "command": "tail -f /dev/null",
@@ -69,6 +75,26 @@ class Controller:
             except Exception as e:
                 if self.running: log_error(f"Error reading stream: {e}", agent_id=self.tag)
                 break
+    
+    def _sync_db(self):
+        """Continuously monitors the buffer and syncs changes to DB."""
+        while self.running:
+            needs_update = False
+            with self.lock:
+                current_length = len(self.buffer)
+                if current_length > self.last_saved_length:
+                    buffer_snapshot = self.buffer
+                    self.last_saved_length = current_length
+                    needs_update = True
+
+            if needs_update:
+                try:
+                    self.db.update_vm_buffer(self.tag, buffer_snapshot)
+                    log_info("Updating DB...", agent_id=self.tag)
+                except Exception as e:
+                    log_error(f"Failed to update DB: {e}", agent_id=self.tag)
+            
+            time.sleep(5)
 
     def _output_parser(self, buffer):
         screen = pyte.Screen(200, 50)
@@ -119,3 +145,4 @@ class Controller:
         if self.container:
             self.container.stop()
             self.container.remove()
+        log_info("Container stopped", agent_id=self.tag)
