@@ -16,4 +16,25 @@ const attackWorkflow = inngest.createFunction(
   },
 );
 
-export const functions = [attackWorkflow];
+const reportGenerateWorkflow = inngest.createFunction(
+  { id: "report-generate" },
+  { event: "report/generate" },
+  async ({ event, step }) => {
+    const taskId = await step.run("publish-to-rabbitmq", async () => {
+      const taskId = await publishToRabbitMQ({
+        taskName: "worker.report",
+        args: [
+          event.data.reportId,
+          event.data.type,
+          event.data.attackId,
+          event.data.systemId,
+          event.data.userId,
+        ],
+      });
+      return taskId;
+    });
+    return taskId;
+  },
+);
+
+export const functions = [attackWorkflow, reportGenerateWorkflow];
