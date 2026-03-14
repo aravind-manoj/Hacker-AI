@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -56,10 +57,7 @@ export default function DashboardSidebar() {
 
       <SidebarHeader className="relative z-10 bg-transparent">
         <Link className="flex w-full justify-center items-center gap-2 cursor-pointer py-4" href={"/dashboard"}>
-          <Terminal className="w-6 h-6 text-red-600 animate-pulse" />
-          <span className="text-foreground font-mono font-bold tracking-tight text-xl">
-            Hacker<span className="text-red-600">.AI</span>
-          </span>
+          <Image src={resolvedTheme === "dark" ? "/logo_white.svg" : "/logo_black.svg"} alt="Hacker.AI Logo" className="w-[265px] h-auto" width={265} height={48} priority />
         </Link>
       </SidebarHeader>
       <SidebarContent className="relative z-10 bg-transparent">
