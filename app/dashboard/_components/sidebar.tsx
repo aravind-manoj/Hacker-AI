@@ -57,7 +57,14 @@ export default function DashboardSidebar() {
 
       <SidebarHeader className="relative z-10 bg-transparent">
         <Link className="flex w-full justify-center items-center gap-2 cursor-pointer py-4" href={"/dashboard"}>
-          <Image src={resolvedTheme === "dark" ? "/logo_white.svg" : "/logo_black.svg"} alt="Hacker.AI Logo" className="w-[265px] h-auto" width={265} height={48} priority />
+          <Image
+            src={resolvedTheme === "dark" ? "/logo.svg" : "/logo_black.svg"}
+            alt="Hacker.AI Logo"
+            className="w-[250px] h-auto"
+            width={250}
+            height={45}
+            priority
+          />
         </Link>
       </SidebarHeader>
       <SidebarContent className="relative z-10 bg-transparent">
