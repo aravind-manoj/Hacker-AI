@@ -1,7 +1,7 @@
 "use client";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenu, SidebarMenuBadge, SidebarMenuButton } from "@/components/ui/sidebar";
 import { redirect } from "next/navigation";
-import Image from "next/image";
+import { Terminal } from "lucide-react";
 import { Sections } from "./sections";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -22,12 +22,16 @@ export default function DashboardSidebar() {
 
   if (!mounted) {
     return (
-      <Sidebar>
-        <SidebarHeader className="flex w-full justify-center items-center">
+      <Sidebar className="overflow-hidden border-r border-red-900/30">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[80%] h-[30%] bg-red-500/5 dark:bg-red-900/30 blur-[80px] rounded-full" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[80%] h-[30%] bg-red-500/5 dark:bg-red-900/20 blur-[80px] rounded-full" />
+        </div>
+        <SidebarHeader className="relative z-10 flex w-full justify-center items-center bg-transparent">
           <Skeleton className="w-[90%] h-16 rounded-2xl" />
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup className="mt-5 w-full flex justify-center items-center">
+        <SidebarContent className="relative z-10 bg-transparent">
+          <SidebarGroup className="mt-5 w-full flex justify-center items-center bg-transparent">
             <Skeleton className="w-[95%] h-10 rounded-2xl" />
             <Skeleton className="mt-3 w-[95%] h-10 rounded-2xl" />
             <Skeleton className="mt-3 w-[95%] h-10 rounded-2xl" />
@@ -36,7 +40,7 @@ export default function DashboardSidebar() {
             <Skeleton className="mt-3 w-[95%] h-10 rounded-2xl" />
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter className="flex justify-center items-center">
+        <SidebarFooter className="relative z-10 flex justify-center items-center bg-transparent">
           <Skeleton className="my-2 w-[95%] h-12 rounded-2xl" />
         </SidebarFooter>
       </Sidebar>
@@ -44,15 +48,22 @@ export default function DashboardSidebar() {
   }
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <Link className="flex w-full justify-center items-center cursor-pointer" href={"/dashboard"}>
-          <Image src={resolvedTheme === "dark" ? "/logo_white.svg" : "/logo_black.svg"} alt="logo" className="w-16 h-auto" width={100} height={100} priority />
-          <h1 className="text-2xl font-bold">Hacker.AI</h1>
+    <Sidebar className="overflow-hidden border-r border-red-900/30">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[80%] h-[30%] bg-red-500/5 dark:bg-red-900/30 blur-[80px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[80%] h-[30%] bg-red-500/5 dark:bg-red-900/20 blur-[80px] rounded-full" />
+      </div>
+
+      <SidebarHeader className="relative z-10 bg-transparent">
+        <Link className="flex w-full justify-center items-center gap-2 cursor-pointer py-4" href={"/dashboard"}>
+          <Terminal className="w-6 h-6 text-red-600 animate-pulse" />
+          <span className="text-foreground font-mono font-bold tracking-tight text-xl">
+            Hacker<span className="text-red-600">.AI</span>
+          </span>
         </Link>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup className="mt-5">
+      <SidebarContent className="relative z-10 bg-transparent">
+        <SidebarGroup className="mt-5 bg-transparent">
           <SidebarMenu>
             {Sections.map((item) => {
               const active = item.href === "/" + path;
@@ -60,7 +71,12 @@ export default function DashboardSidebar() {
                 <SidebarMenuButton
                   isActive={active}
                   key={item.title}
-                  className={cn("cursor-pointer p-5 mt-1 text-base" + (active ? " font-bold" : ""))}
+                  className={cn(
+                    "cursor-pointer p-5 mt-1 text-base transition-all duration-200 rounded-md",
+                    active 
+                      ? "font-bold bg-sidebar-accent text-sidebar-accent-foreground shadow-sm border-l-2 border-red-600"
+                      : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                  )}
                   onClick={() => redirect(`/dashboard/${item.href}`)}
                 >
                   {item.icon} {item.title}
@@ -70,9 +86,9 @@ export default function DashboardSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="relative z-10 bg-transparent">
         <Link className="flex justify-center" href={"/docs"} target="_blank">
-          <Button className="cursor-pointer my-2 w-[95%]">
+          <Button className="cursor-pointer my-2 w-[95%] relative">
             <span>Documentation</span>
           </Button>
         </Link>
