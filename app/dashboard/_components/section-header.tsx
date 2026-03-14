@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Laptop, LogOut, Moon, Sun, SunMoon, User, UserPen } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +20,11 @@ export default function SectionHeader() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <section className="relative h-14 w-full flex border-b border-gray-300 dark:border-gray-800">
+    <section className="relative h-14 w-full flex items-center px-4 border-b border-gray-300 dark:border-gray-800 gap-4">
       <SidebarTrigger />
+      <div className="flex items-center">
+        <Image src={theme === "dark" || theme === "system" ? "/logo_white.svg" : "/logo_black.svg"} alt="Hacker.AI Logo" width={180} height={38} priority className="h-8 w-auto" />
+      </div>
       <div className="absolute right-0 mr-5 h-full flex gap-5 justify-center items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
