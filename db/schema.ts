@@ -141,3 +141,29 @@ export const system = pgTable("system", {
 		name: "system_user_id_fkey"
 	}).onDelete("cascade"),
 ]);
+
+// Vulnerability
+export const vulnerability = pgTable("vulnerability", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: text("user_id"),
+	systemId: text("system_id"),
+	vulnId: text("vuln_id"),
+	title: text(),
+	description: text(),
+	severity: text(),
+	isFixed: boolean("is_fixed"),
+	fixedAt: timestamp("fixed_at", { withTimezone: true, mode: 'string' }),
+	fixLogBuffer: text("fix_log_buffer"),
+}, (table) => [
+	foreignKey({
+		columns: [table.systemId],
+		foreignColumns: [system.id],
+		name: "vulnerability_system_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "vulnerability_user_id_fkey"
+	}).onDelete("cascade"),
+]);

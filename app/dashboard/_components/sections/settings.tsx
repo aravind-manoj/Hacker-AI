@@ -42,20 +42,20 @@ export default function SettingsSection() {
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto p-6 text-white font-mono">
-      <div className="border-b border-red-900/40 pb-4 mb-6">
+    <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto p-6 text-foreground font-mono">
+      <div className="border-b border-red-900/30 pb-4 mb-6">
         <h2 className="text-3xl font-bold uppercase tracking-tight flex items-center gap-3 text-red-500">
           <KeyRound className="w-8 h-8" />
           Security Credentials
         </h2>
-        <p className="text-gray-400 mt-2 text-sm">
+        <p className="text-muted-foreground mt-2 text-sm">
           Update the master encryption key used for dashboard access and agent orchestration.
         </p>
       </div>
 
       <div className="relative group">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-red-900 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-        <div className="relative bg-[#050505] border border-red-900/50 rounded-lg p-8 shadow-2xl">
+        <div className="relative bg-card border border-red-900/50 rounded-lg p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
               <label className="text-sm text-red-500 font-bold uppercase tracking-wider flex items-center gap-2">
@@ -67,7 +67,7 @@ export default function SettingsSection() {
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="bg-[#0a0a0a] border border-red-900/40 rounded px-4 py-3 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors placeholder:text-gray-700"
+                className="bg-background border border-red-900/40 rounded px-4 py-3 text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors placeholder:text-muted-foreground/50"
                 placeholder="Enter current master key..."
               />
             </div>
@@ -82,7 +82,7 @@ export default function SettingsSection() {
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0a0a0a] border border-red-900/40 rounded px-4 py-3 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors placeholder:text-gray-700"
+                className="bg-background border border-red-900/40 rounded px-4 py-3 text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors placeholder:text-muted-foreground/50"
                 placeholder="Generate a robust key..."
               />
             </div>
@@ -96,13 +96,13 @@ export default function SettingsSection() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0a0a0a] border border-red-900/40 rounded px-4 py-3 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors placeholder:text-gray-700"
+                className="bg-background border border-red-900/40 rounded px-4 py-3 text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors placeholder:text-muted-foreground/50"
                 placeholder="Verify new key..."
               />
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <div className="text-xs text-gray-500 max-w-[60%]">
+              <div className="text-xs text-muted-foreground max-w-[60%]">
                 Passphrases must be over 16 characters and contain volatile entropy.
               </div>
               <button

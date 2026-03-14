@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { user, account, session, report, attack, attackVm, system } from "./schema";
+import { user, account, session, report, attack, attackVm, system, vulnerability } from "./schema";
 
 export const accountRelations = relations(account, ({ one }) => ({
 	user: one(user, {
@@ -48,6 +48,18 @@ export const attackVmRelations = relations(attackVm, ({ one }) => ({
 export const systemRelations = relations(system, ({ one }) => ({
 	user: one(user, {
 		fields: [system.userId],
+		references: [user.id]
+	}),
+}));
+
+// Vulnerability
+export const vulnerabilityRelations = relations(vulnerability, ({ one }) => ({
+	system: one(system, {
+		fields: [vulnerability.systemId],
+		references: [system.id]
+	}),
+	user: one(user, {
+		fields: [vulnerability.userId],
 		references: [user.id]
 	}),
 }));

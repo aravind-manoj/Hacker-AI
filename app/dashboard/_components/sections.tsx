@@ -44,30 +44,30 @@ export const Sections = [
     section: <RealtimeVulnsSection />,
     icon: <Radar />,
   },
-  {
-    title: "Smart Analytics",
-    href: "/smart-analytics",
-    section: <SmartAnalyticsSection />,
-    icon: <BrainCircuit />,
-  },
-  {
-    title: "Alerts",
-    href: "/alerts",
-    section: <AlertsSection />,
-    icon: <Bell />,
-  },
+  // {
+  //   title: "Smart Analytics",
+  //   href: "/smart-analytics",
+  //   section: <SmartAnalyticsSection />,
+  //   icon: <BrainCircuit />,
+  // },
+  // {
+  //   title: "Alerts",
+  //   href: "/alerts",
+  //   section: <AlertsSection />,
+  //   icon: <Bell />,
+  // },
   {
     title: "Reports",
     href: "/reports",
     section: <ReportsSection />,
     icon: <FileText />,
   },
-  {
-    title: "Context",
-    href: "/context",
-    section: <ContextSection />,
-    icon: <Globe />,
-  },
+  // {
+  //   title: "Context",
+  //   href: "/context",
+  //   section: <ContextSection />,
+  //   icon: <Globe />,
+  // },
   {
     title: "Settings",
     href: "/settings",
