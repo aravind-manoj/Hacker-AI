@@ -29,7 +29,7 @@ export default function HowItWorks() {
     ];
 
     return (
-        <section id="how-it-works" className="py-24 relative bg-[#0a0a0a] border-y border-red-900/30">
+        <section id="how-it-works" className="py-24 relative bg-gray-50 dark:bg-[#0a0a0a] border-y border-gray-200 dark:border-red-900/30">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold font-mono text-white mb-4 uppercase">
@@ -45,8 +45,8 @@ export default function HowItWorks() {
 
                     {steps.map((step, idx) => (
                         <div key={idx} className="relative group text-center z-10">
-                            <div className="w-24 h-24 mx-auto bg-[#050505] border border-red-900/50 rounded-full flex items-center justify-center mb-6 relative group-hover:border-red-500/50 group-hover:shadow-[0_0_30px_rgba(255,0,0,0.2)] transition-all duration-300">
-                                <span className="absolute -top-3 -right-3 text-sm font-mono text-red-600 font-bold bg-[#050505] px-2">
+                            <div className="w-24 h-24 mx-auto bg-white dark:bg-[#050505] border border-gray-300 dark:border-red-900/50 rounded-full flex items-center justify-center mb-6 relative group-hover:border-red-500/50 group-hover:shadow-[0_0_30px_rgba(255,0,0,0.2)] transition-all duration-300">
+                                <span className="absolute -top-3 -right-3 text-sm font-mono text-red-600 font-bold bg-white dark:bg-[#050505] px-2">
                                     {step.num}
                                 </span>
                                 {step.icon}
