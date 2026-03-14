@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../init";
+import { reportsRouter } from "./reports";
 
 export const appRouter = createTRPCRouter({
   test: publicProcedure.query(async (opts) => {
@@ -7,6 +7,8 @@ export const appRouter = createTRPCRouter({
       status: "success",
     };
   }),
+  reports: reportsRouter,
 });
 
 export type AppRouter = typeof appRouter;
+
