@@ -68,7 +68,7 @@ export default function SystemsSection() {
     };
 
     return (
-        <div className="flex flex-col gap-8 w-full max-w-6xl p-6 text-foreground font-mono animate-in fade-in slide-in-from-bottom-4 duration-500 mx-auto">
+        <div className="flex flex-col gap-8 w-full max-w-6xl p-6 text-foreground font-mono mx-auto">
             {/* Header section w/ Add Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-red-900/30 pb-6">
                 <div>
@@ -220,7 +220,6 @@ export default function SystemsSection() {
                                             <h3 className="font-bold text-foreground uppercase text-sm truncate max-w-[150px]">{sys.name}</h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className="relative flex h-2 w-2">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                                                 </span>
                                                 <span className="text-[10px] uppercase text-red-400 tracking-wider">Connected</span>

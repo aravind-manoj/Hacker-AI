@@ -18,7 +18,6 @@ import {
     ChevronRight,
     AlertTriangle,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -62,10 +61,7 @@ function StatCard({
     accent?: string;
 }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+        <div
             className="relative group overflow-hidden rounded-lg border border-red-900/40 bg-card"
         >
             {/* Glow blob */}
@@ -87,7 +83,7 @@ function StatCard({
             </div>
             {/* Bottom accent line */}
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-600/40 to-transparent" />
-        </motion.div>
+        </div>
     );
 }
 
@@ -110,11 +106,7 @@ function ReportRow({
     onDelete: (id: string, name: string) => void;
 }) {
     return (
-        <motion.tr
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ delay: index * 0.04, duration: 0.3 }}
+        <tr
             className="group border-b border-red-900/20 hover:bg-red-950/10 transition-colors"
         >
             {/* Name + description */}
@@ -173,7 +165,7 @@ function ReportRow({
                     <Trash2 className="w-3.5 h-3.5" />
                 </button>
             </td>
-        </motion.tr>
+        </tr>
     );
 }
 
@@ -213,26 +205,19 @@ function CreateModal({
     };
 
     return (
-        <AnimatePresence>
+        <>
             {open && (
                 <>
                     {/* Backdrop */}
-                    <motion.div
+                    <div
                         key="backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
                         onClick={onClose}
                         className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
                     />
 
                     {/* Modal */}
-                    <motion.div
+                    <div
                         key="modal"
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ duration: 0.2 }}
                         className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
                     >
                         <div className="pointer-events-auto w-full max-w-md bg-card border border-red-900/50 rounded-lg shadow-2xl shadow-red-900/20 overflow-hidden">
@@ -324,10 +309,10 @@ function CreateModal({
                                 </div>
                             </form>
                         </div>
-                    </motion.div>
+                    </div>
                 </>
             )}
-        </AnimatePresence>
+        </>
     );
 }
 
@@ -354,23 +339,16 @@ function DeleteModal({
     });
 
     return (
-        <AnimatePresence>
+        <>
             {target && (
                 <>
-                    <motion.div
+                    <div
                         key="del-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
                         onClick={onClose}
                         className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
                     />
-                    <motion.div
+                    <div
                         key="del-modal"
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ duration: 0.2 }}
                         className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
                     >
                         <div className="pointer-events-auto w-full max-w-sm bg-card border border-red-900/50 rounded-lg shadow-2xl shadow-red-900/20 overflow-hidden">
@@ -415,10 +393,10 @@ function DeleteModal({
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </>
             )}
-        </AnimatePresence>
+        </>
     );
 }
 
@@ -455,10 +433,7 @@ export default function ReportsSection() {
     return (
         <div className="flex flex-col gap-6 p-6 w-full min-h-[calc(100vh-56px)] font-mono">
             {/* ── Page Header ─────────────────────────────────────────── */}
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+            <div
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
                 <div>
@@ -482,7 +457,7 @@ export default function ReportsSection() {
                     <Plus className="w-4 h-4" />
                     New Report
                 </button>
-            </motion.div>
+            </div>
 
             {/* ── Stat Cards ──────────────────────────────────────────── */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -507,10 +482,7 @@ export default function ReportsSection() {
             </div>
 
             {/* ── Reports Table Card ───────────────────────────────────── */}
-            <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15, duration: 0.4 }}
+            <div
                 className="flex-1 border border-red-900/40 rounded-lg bg-card overflow-hidden flex flex-col"
             >
                 {/* Table toolbar */}
@@ -598,16 +570,14 @@ export default function ReportsSection() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <AnimatePresence>
-                                    {filtered.map((rep, i) => (
-                                        <ReportRow
-                                            key={rep.id}
-                                            rep={rep}
-                                            index={i}
-                                            onDelete={(id, name) => setDeleteTarget({ id, name })}
-                                        />
-                                    ))}
-                                </AnimatePresence>
+                                {filtered.map((rep, i) => (
+                                    <ReportRow
+                                        key={rep.id}
+                                        rep={rep}
+                                        index={i}
+                                        onDelete={(id, name) => setDeleteTarget({ id, name })}
+                                    />
+                                ))}
                             </tbody>
                         </table>
                     )}
@@ -626,7 +596,7 @@ export default function ReportsSection() {
                         </span>
                     </div>
                 )}
-            </motion.div>
+            </div>
 
             {/* ── Modals ──────────────────────────────────────────────── */}
             <CreateModal
