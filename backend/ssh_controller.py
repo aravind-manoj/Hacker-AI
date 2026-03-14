@@ -3,6 +3,8 @@ import time
 import socket
 import paramiko
 import pyte
+from logger import log_info, log_error
+from db_manager import DBManager
 
 class SSHController:
     def __init__(self, hostname, username, password=None, key_filename=None, port=22, tag=None):
@@ -20,9 +22,13 @@ class SSHController:
         self.buffer = ""
         self.lock = threading.Lock()
         self.running = False
+        self.db = DBManager()
+        self.last_saved_length = 0
 
     def start(self):
         """Connects to the SSH server and starts the persistent shell session."""
+        log_info(f"Connecting to SSH ({self.username}@{self.hostname}:{self.port})", agent_id=self.tag)
+        
         try:
             connect_kwargs = {
                 "hostname": self.hostname,
@@ -48,7 +54,10 @@ class SSHController:
             self.db_thread = threading.Thread(target=self._sync_db)
             self.db_thread.daemon = True
             self.db_thread.start()
+            
+            log_info("SSH Session started successfully", agent_id=self.tag)
         except Exception as e:
+            log_error(f"Failed to start SSH session: {e}", agent_id=self.tag)
             self.running = False
             raise e
 
@@ -60,6 +69,7 @@ class SSHController:
                     data = self.channel.recv(4096)
                     if not data:
                         # Channel closed
+                        log_info("SSH channel closed by server", agent_id=self.tag)
                         break
                     
                     decoded = data.decode('utf-8', errors='ignore')
@@ -71,9 +81,31 @@ class SSHController:
             except socket.timeout:
                 continue
             except Exception as e:
+                if self.running: 
+                    log_error(f"Error reading SSH stream: {e}", agent_id=self.tag)
                 break
                 
         self.running = False
+    
+    def _sync_db(self):
+        """Continuously monitors the buffer and syncs changes to DB."""
+        while self.running:
+            needs_update = False
+            with self.lock:
+                current_length = len(self.buffer)
+                if current_length > self.last_saved_length:
+                    buffer_snapshot = self.buffer
+                    self.last_saved_length = current_length
+                    needs_update = True
+
+            if needs_update:
+                try:
+                    self.db.update_vm_buffer(self.tag, buffer_snapshot)
+                    log_info("Updating DB...", agent_id=self.tag)
+                except Exception as e:
+                    log_error(f"Failed to update DB: {e}", agent_id=self.tag)
+            
+            time.sleep(5)
 
     def _output_parser(self, buffer):
         screen = pyte.Screen(200, 50)
@@ -133,3 +165,4 @@ class SSHController:
             self.channel.close()
         if self.client:
             self.client.close()
+        log_info("SSH session stopped", agent_id=self.tag)
