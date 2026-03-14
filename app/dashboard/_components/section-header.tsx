@@ -22,9 +22,6 @@ export default function SectionHeader() {
   return (
     <section className="relative h-14 w-full flex items-center px-4 border-b border-gray-300 dark:border-gray-800 gap-4">
       <SidebarTrigger />
-      <div className="flex items-center">
-        <Image src={theme === "dark" || theme === "system" ? "/logo_white.svg" : "/logo_black.svg"} alt="Hacker.AI Logo" width={180} height={38} priority className="h-8 w-auto" />
-      </div>
       <div className="absolute right-0 mr-5 h-full flex gap-5 justify-center items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -73,10 +70,10 @@ export default function SectionHeader() {
             </DialogHeader>
             <div className=""></div>
             <DialogFooter className="items-end">
-              <Button variant={"outline"} className="cursor-pointer" onClick={() => {}}>
+              <Button variant={"outline"} className="cursor-pointer" onClick={() => { }}>
                 Cancel
               </Button>
-              <Button className="cursor-pointer" onClick={() => {}}>
+              <Button className="cursor-pointer" onClick={() => { }}>
                 Save
               </Button>
             </DialogFooter>
