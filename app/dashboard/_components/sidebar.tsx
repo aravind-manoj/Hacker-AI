@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function DashboardSidebar() {
   const { resolvedTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const { path } = useParams();
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -71,7 +71,7 @@ export default function DashboardSidebar() {
         <SidebarGroup className="mt-5 bg-transparent">
           <SidebarMenu>
             {Sections.map((item) => {
-              const active = item.href === "/" + path;
+              const active = pathname === `/dashboard${item.href}` || pathname.startsWith(`/dashboard${item.href}/`);
               return (
                 <SidebarMenuButton
                   isActive={active}
