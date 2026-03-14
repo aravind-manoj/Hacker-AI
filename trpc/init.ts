@@ -4,8 +4,6 @@ import superjson from "superjson";
 import { headers } from "next/headers";
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { redis } from "@/lib/redis";
-import { s3 } from "@/lib/s3";
 
 export const createTRPCContext = cache(async (opts?: { req?: Request }) => {
   const heads = new Headers(opts?.req?.headers ?? (await headers()));
@@ -16,8 +14,6 @@ export const createTRPCContext = cache(async (opts?: { req?: Request }) => {
   return {
     auth: authSession,
     db: db,
-    redis: redis,
-    s3: s3,
   };
 });
 
