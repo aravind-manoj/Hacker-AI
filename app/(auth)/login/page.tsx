@@ -42,7 +42,7 @@ export default function LoginPage() {
     <div className="w-full max-w-md">
       <div className="glass-panel p-8 rounded-xl relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-red-900 origin-left transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />
-        
+
         <div className="mb-8 font-mono">
           <h1 className="text-2xl font-bold tracking-tight mb-2 flex items-center gap-2">
             Login

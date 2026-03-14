@@ -1,6 +1,6 @@
-import { Terminal } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
+import Image from "next/image";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -14,10 +14,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* Simple header for auth pages */}
       <div className="absolute top-0 w-full z-10 p-6">
         <Link href="/" className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity w-fit cursor-pointer">
-          <Terminal className="w-6 h-6 text-red-600 animate-pulse" />
-          <span className="text-white font-mono font-bold tracking-tight text-xl">
-            Hacker<span className="text-red-600">.AI</span>
-          </span>
+          <Image src="/logo_white.svg" alt="Hacker.AI Logo" width={220} height={40} priority className="w-[200px] h-auto" />
         </Link>
       </div>
 
