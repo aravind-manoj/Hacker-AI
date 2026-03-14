@@ -1,8 +1,6 @@
 import { pgTable, unique, text, boolean, timestamp, index, foreignKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
-
-
 export const user = pgTable("user", {
 	id: text().primaryKey().notNull(),
 	name: text().notNull(),
@@ -66,4 +64,19 @@ export const session = pgTable("session", {
 		name: "session_user_id_user_id_fk"
 	}).onDelete("cascade"),
 	unique("session_token_unique").on(table.token),
+]);
+
+export const report = pgTable("report", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: text("user_id"),
+	name: text(),
+	description: text(),
+	url: text(),
+}, (table) => [
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "report_user_id_fkey"
+	}).onDelete("cascade"),
 ]);
