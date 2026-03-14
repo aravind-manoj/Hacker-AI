@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { deleteSessionCookie } from "@/lib/client/session";
 import { Toaster } from "react-hot-toast";
+import DashboardProviders from "./_components/providers";
 
 export default async function DashboardLayout({
   children,
@@ -22,14 +23,16 @@ export default async function DashboardLayout({
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <SidebarProvider>
-        <Toaster />
-        <DashboardSidebar />
-        <main className="w-full">
-          <SectionHeader />
-          {children}
-        </main>
-      </SidebarProvider>
+      <DashboardProviders>
+        <SidebarProvider>
+          <Toaster />
+          <DashboardSidebar />
+          <main className="w-full">
+            <SectionHeader />
+            {children}
+          </main>
+        </SidebarProvider>
+      </DashboardProviders>
     </ThemeProvider>
   );
 }
