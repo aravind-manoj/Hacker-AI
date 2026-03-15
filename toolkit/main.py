@@ -11,6 +11,7 @@ import time
 import schedule
 import requests
 import logging
+import subprocess
 
 # Basic logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -29,6 +30,28 @@ def load_config():
         logger.error(f"Failed to read config: {e}")
         return None
 
+def run_trivy_scan():
+    try:
+        logger.info("Running Trivy system scan...")
+        command = [
+            "sudo", "trivy", "rootfs", "-f", "json", "-o", "scan.json", 
+            "--skip-dirs", "/proc,/sys,/dev,/tmp,/run", "/"
+        ]
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        
+        if os.path.exists("scan.json"):
+            with open("scan.json", "r") as f:
+                return json.load(f)
+        else:
+            logger.warning("scan.json was not created.")
+            return None
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Trivy scan failed with error: {e.stderr}")
+        return None
+    except Exception as e:
+        logger.error(f"Error during Trivy scan: {e}")
+        return None
+
 def send_update():
     config = load_config()
     if not config:
@@ -42,13 +65,16 @@ def send_update():
         logger.error("Missing required configuration values")
         return
 
+    scan_data = run_trivy_scan()
+
     payload = {
         "secret-key": secret_key,
+        "scan_data": scan_data,
     }
 
     try:
         logger.info(f"Sending check-in to {endpoint_address}")
-        response = requests.post(f"{endpoint_address}/api/agent/{agent_id}", json=payload, timeout=10)
+        response = requests.post(f"{endpoint_address}/api/agent/{agent_id}", json=payload, timeout=30)
         
         if response.status_code == 200:
             logger.info("Successfully updated database")

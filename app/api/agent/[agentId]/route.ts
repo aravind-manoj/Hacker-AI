@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { system } from "@/db/schema";
+import { system, vulnerability } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { v4 as uuid4 } from 'uuid';
 
 export async function POST(
   req: NextRequest,
@@ -37,6 +38,43 @@ export async function POST(
         { error: "Unauthorized. Invalid secret key." },
         { status: 401 }
       );
+    }
+
+    // Process vulnerabilities
+    const scanData = body.scan_data;
+    if (scanData && scanData.Results) {
+      const existingVulns = await db.select({ vulnId: vulnerability.vulnId })
+        .from(vulnerability)
+        .where(eq(vulnerability.systemId, agentId));
+
+      const existingVulnIds = new Set(existingVulns.map(v => v.vulnId));
+      const newVulnerabilities = [];
+      const seenVulnIds = new Set(); // To prevent duplicates in the same scan
+
+      for (const result of scanData.Results) {
+        if (result.Vulnerabilities) {
+          for (const vuln of result.Vulnerabilities) {
+            if (!existingVulnIds.has(vuln.VulnerabilityID) && !seenVulnIds.has(vuln.VulnerabilityID)) {
+              newVulnerabilities.push({
+                id: uuid4(),
+                userId: sys.userId,
+                systemId: agentId,
+                vulnId: vuln.VulnerabilityID,
+                title: vuln.Title || "Unknown",
+                description: vuln.Description || "",
+                severity: vuln.Severity || "UNKNOWN",
+                isFixed: false,
+                status: "not_fixed",
+              });
+              seenVulnIds.add(vuln.VulnerabilityID);
+            }
+          }
+        }
+      }
+
+      if (newVulnerabilities.length > 0) {
+        await db.insert(vulnerability).values(newVulnerabilities);
+      }
     }
 
     // You could update a 'last_seen' timestamp here if it existed, 
