@@ -239,6 +239,55 @@ export default function DocsPage() {
                         </div>
                     </section>
 
+                    {/* Docker Sandboxing */}
+                    <section id="sandboxing" className="scroll-mt-24">
+                        <h2 className="text-2xl font-bold uppercase flex items-center gap-3 mb-8">
+                            <Lock className="w-6 h-6 text-red-500" />
+                            Docker Sandboxing
+                        </h2>
+                        <div className="glass-panel p-8 rounded-lg border border-red-900/30 bg-red-950/5">
+                            <p className="text-gray-400 mb-6 leading-relaxed">
+                                Security and isolation are paramount when executing offensive tools. Hacker.AI orchestrates a
+                                <span className="text-white"> multi-tenant containerized environment</span> where every action is strictly
+                                confined to prevent interference with host systems.
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <div className="flex gap-3">
+                                        <div className="mt-1 w-2 h-2 rounded-full bg-red-600 flex-shrink-0" />
+                                        <div>
+                                            <span className="text-white block font-bold text-xs uppercase">Ephemeral Lifecycle</span>
+                                            <span className="text-gray-500 text-xs text-wrap">Containers are provisioned instantly for a specific task and purged upon completion, leaving no forensic footprint.</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="mt-1 w-2 h-2 rounded-full bg-red-600 flex-shrink-0" />
+                                        <div>
+                                            <span className="text-white block font-bold text-xs uppercase">Network Segregation</span>
+                                            <span className="text-gray-500 text-xs text-wrap">Isolated virtual networks ensure sub-agents can only communicate with authorized targets, blocking lateral movement.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex gap-3">
+                                        <div className="mt-1 w-2 h-2 rounded-full bg-red-600 flex-shrink-0" />
+                                        <div>
+                                            <span className="text-white block font-bold text-xs uppercase">Resource Quotas</span>
+                                            <span className="text-gray-500 text-xs text-wrap">Strict CGroup limits on CPU and RAM prevent sub-agents from consuming excessive host resources or causing DoS.</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="mt-1 w-2 h-2 rounded-full bg-red-600 flex-shrink-0" />
+                                        <div>
+                                            <span className="text-white block font-bold text-xs uppercase">Dynamic Tool Provisioning</span>
+                                            <span className="text-gray-500 text-xs text-wrap">Tools are automatically installed inside the docker containers only if the specific attack vector requires them, maintaining a lean and secure footprint.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     {/* The Solution */}
                     <section id="solution" className="scroll-mt-24">
                         <h2 className="text-2xl font-bold uppercase flex items-center gap-3 mb-8">
