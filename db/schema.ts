@@ -170,3 +170,25 @@ export const vulnerability = pgTable("vulnerability", {
 		name: "vulnerability_user_id_fkey"
 	}).onDelete("cascade"),
 ]);
+
+// Business Context
+export const businessContext = pgTable("business_context", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: text("user_id").notNull(),
+	url: text(),
+	name: text(),
+	description: text(),
+	industry: text(),
+	services: text(),
+	contactEmail: text("contact_email"),
+	phone: text(),
+	address: text(),
+	socialLinks: text("social_links"),
+}, (table) => [
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "business_context_user_id_fkey"
+	}).onDelete("cascade"),
+]);

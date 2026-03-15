@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Globe, Sparkles, Check, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { trpc } from "@/trpc/client";
 
 export default function ContextSection() {
     const [url, setUrl] = useState("");
@@ -20,36 +21,79 @@ export default function ContextSection() {
         social: "",
     });
 
+    // Load existing saved context on mount
+    const { data: savedContext } = trpc.context.get.useQuery();
+
+    useEffect(() => {
+        if (savedContext) {
+            setUrl(savedContext.url || "");
+            setFormData({
+                name: savedContext.name || "",
+                description: savedContext.description || "",
+                industry: savedContext.industry || "",
+                services: savedContext.services || "",
+                email: savedContext.contactEmail || "",
+                phone: savedContext.phone || "",
+                address: savedContext.address || "",
+                social: savedContext.socialLinks || "",
+            });
+        }
+    }, [savedContext]);
+
+    const analyzeMutation = trpc.context.analyze.useMutation({
+        onSuccess: (data) => {
+            setFormData({
+                name: data.name,
+                description: data.description,
+                industry: data.industry,
+                services: data.services,
+                email: data.contactEmail,
+                phone: data.phone,
+                address: data.address,
+                social: data.socialLinks,
+            });
+            setLoading(false);
+            toast.success("AI Analysis Complete!");
+        },
+        onError: (error) => {
+            setLoading(false);
+            toast.error(error.message || "Analysis failed.");
+        },
+    });
+
+    const upsertMutation = trpc.context.upsert.useMutation({
+        onSuccess: () => {
+            setSaving(false);
+            toast.success("Context Saved Successfully!");
+        },
+        onError: (error) => {
+            setSaving(false);
+            toast.error(error.message || "Failed to save context.");
+        },
+    });
+
     const handleAnalyze = () => {
         if (!url) {
             toast.error("Please enter a valid URL.");
             return;
         }
-
         setLoading(true);
-        // Simulate AI extraction
-        setTimeout(() => {
-            setFormData({
-                name: "Hacker.AI Offensive Security",
-                description: "Building Advanced Technology that supercharges your penetration testing workflows with autonomous Sub-Agents, transforming the way you isolate and execute zero-day payloads.",
-                industry: "Cybersecurity / Penetration Testing",
-                services: "Agentic reconnaissance, Docker isolation, RabbitMQ scaling, Vulnerability orchestration",
-                email: "neural-net@hacker.ai",
-                phone: "+1 (555) 314-1592",
-                address: "714 Subnet Mask Blvd, Null Island",
-                social: "https://x.com/HackerAI\nhttps://github.com/hacker-ai",
-            });
-            setLoading(false);
-            toast.success("AI Analysis Complete!");
-        }, 2000);
+        analyzeMutation.mutate({ url });
     };
 
     const handleSave = () => {
         setSaving(true);
-        setTimeout(() => {
-            setSaving(false);
-            toast.success("Context Saved Successfully!");
-        }, 1000);
+        upsertMutation.mutate({
+            url,
+            name: formData.name,
+            description: formData.description,
+            industry: formData.industry,
+            services: formData.services,
+            contactEmail: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            socialLinks: formData.social,
+        });
     };
 
     return (

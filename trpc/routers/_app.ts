@@ -4,6 +4,7 @@ import { systemsRouter } from "./systems";
 import { pentesterRouter } from "./pentester";
 import { overviewRouter } from "./overview";
 import { vulnerabilitiesRouter } from "./vulnerabilities";
+import { contextRouter } from "./context";
 
 export const appRouter = createTRPCRouter({
   test: publicProcedure.query(async (opts) => {
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   pentester: pentesterRouter,
   overview: overviewRouter,
   vulnerabilities: vulnerabilitiesRouter,
+  context: contextRouter,
 });
 
 export type AppRouter = typeof appRouter;
