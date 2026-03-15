@@ -33,26 +33,31 @@ echo "Starting Hacker AI Agent installation..."
 if ! command -v uv &> /dev/null; then
     echo "uv not found. Installing..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    source $HOME/.local/bin/env
+    # Source the environment variables so uv is immediately available
+    source "$HOME/.local/bin/env"
 else
     echo "uv is already installed"
 fi
 
-export PATH="$HOME/.cargo/bin:$PATH"
+# Ensure uv's install paths are in PATH
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
 # Create installation directory
 echo "Creating installation directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Download main.py from GitHub
+# Download main.py from GitHub directly to the install directory
 echo "Downloading main.py from GitHub repository..."
 curl -sSL "https://raw.githubusercontent.com/aravind-manoj/Hacker-AI/refs/heads/main/toolkit/main.py" -o "$INSTALL_DIR/$PYTHON_SCRIPT"
 chmod +x "$INSTALL_DIR/$PYTHON_SCRIPT"
 
-# Ensure dependencies are available
+# Ensure dependencies are available using a Virtual Environment
 echo "Installing Python dependencies with uv..."
 cd "$INSTALL_DIR"
-uv pio add schedule requests
+# 1. Create a virtual environment
+uv venv
+# 2. Install dependencies into the virtual environment safely
+uv pip install schedule requests
 cd - > /dev/null
 
 # Create config directory and file with provided values
@@ -89,7 +94,10 @@ fi
 
 # Create systemd service file
 echo "Creating systemd service..."
-UV_PATH=$(which uv)
+
+# Point to the python binary inside the virtual environment we just created
+PYTHON_EXEC="$INSTALL_DIR/.venv/bin/python"
+
 cat > "/etc/systemd/system/${SERVICE_NAME}.service" << EOF
 [Unit]
 Description=Hacker AI Agent Service
@@ -101,14 +109,13 @@ StartLimitIntervalSec=0
 Type=simple
 User=root
 WorkingDirectory=$INSTALL_DIR
-ExecStart=$UV_PATH run $PYTHON_SCRIPT
+ExecStart=$PYTHON_EXEC $PYTHON_SCRIPT
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
 Environment="HOME=/root"
-Environment="PATH=$HOME/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 [Install]
 WantedBy=multi-user.target
