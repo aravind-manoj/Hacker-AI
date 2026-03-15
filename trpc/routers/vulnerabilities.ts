@@ -109,10 +109,12 @@ export const vulnerabilitiesRouter = createTRPCRouter({
       await inngest.send({
         name: "fix/start",
         data: {
-          attackId: input.id, 
-          targetList: [],
-          attackVectors: [],
-          note: "",
+          id: result[0].id,
+          title: result[0].title || "Unknown",
+          description: result[0].description || "No description",
+          severity: result[0].severity || "low",
+          vuln_id: result[0].vulnId || "none",
+          systemId: result[0].systemId || "none",
         },
       });
       

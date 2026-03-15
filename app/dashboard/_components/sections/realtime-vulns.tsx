@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Loader2, ShieldAlert, TerminalSquare, AlertCircle, X, ShieldCheck, Search, Filter, SortDesc, BoxIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { trpc } from "@/trpc/client";
+import "xterm/css/xterm.css";
 import {
   Dialog,
   DialogContent,
@@ -83,11 +84,79 @@ export default function RealtimeVulnsSection() {
   });
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const xtermInstance = useRef<any>(null); // To store the Terminal instance
+  const fitAddonInstance = useRef<any>(null); // To store the FitAddon instance
+
+  // Terminal initialization and log writing
   useEffect(() => {
-    if (pollingVulnId && bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    let resizeObserver: ResizeObserver | null = null;
+    let initialized = false;
+
+    if (pollingVulnId && terminalRef.current) {
+      if (!xtermInstance.current) {
+        // Initialize terminal (dynamic import to avoid SSR issues)
+        Promise.all([
+          import("xterm"),
+          import("xterm-addon-fit")
+        ]).then(([{ Terminal }, { FitAddon }]) => {
+          if (!terminalRef.current) return; // Unmounted before loaded
+          
+          const term = new Terminal({
+            theme: {
+              background: '#0a0a0a',
+              foreground: '#4ade80', // green-400
+              cursor: '#4ade80',
+            },
+            fontFamily: 'monospace',
+            fontSize: 12,
+            disableStdin: true,
+            cursorBlink: !pollingVuln?.isFixed && activeTab !== 'fixed',
+            convertEol: true,
+          });
+
+          const fitAddon = new FitAddon();
+          term.loadAddon(fitAddon);
+          term.open(terminalRef.current);
+          fitAddon.fit();
+
+          xtermInstance.current = term;
+          fitAddonInstance.current = fitAddon;
+          initialized = true;
+
+          // Write initial buffer if any
+          const initialLog = pollingVuln?.fixLogBuffer || (activeTab === 'fixed' ? "No logs available.\n" : "Initializing automated repair agent...\nConnecting to target...\n");
+          term.write(initialLog);
+
+          // Handle Resize
+          resizeObserver = new ResizeObserver(() => {
+             fitAddon.fit();
+          });
+          resizeObserver.observe(terminalRef.current);
+        });
+      }
     }
-  }, [pollingVuln?.fixLogBuffer, pollingVulnId]);
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [pollingVulnId]);
+
+  // Terminal buffer watcher
+  useEffect(() => {
+    if (xtermInstance.current && pollingVuln?.fixLogBuffer) {
+      // Clear the terminal and write the entire buffer when polled
+      // In a real optimized system we would only write the delta, 
+      // but polling returns the whole string.
+      xtermInstance.current.clear();
+      xtermInstance.current.write(pollingVuln.fixLogBuffer);
+      
+      // Update cursor blink state based on completion
+      xtermInstance.current.options.cursorBlink = !pollingVuln.isFixed && activeTab !== 'fixed';
+    }
+  }, [pollingVuln?.fixLogBuffer, pollingVuln?.isFixed, activeTab]);
 
   const handleFixNow = (vulnId: string) => {
     setPollingVulnId(vulnId);
@@ -100,6 +169,11 @@ export default function RealtimeVulnsSection() {
 
   const closeDialog = () => {
     setPollingVulnId(null);
+    if (xtermInstance.current) {
+      xtermInstance.current.dispose();
+      xtermInstance.current = null;
+      fitAddonInstance.current = null;
+    }
     utils.vulnerabilities.getVulnerabilities.invalidate();
   };
 
@@ -353,14 +427,8 @@ export default function RealtimeVulnsSection() {
                 </div>
               </DialogHeader>
 
-              <div className="flex-1 bg-black rounded-lg border border-red-900/30 font-mono text-xs overflow-y-auto p-4 text-green-400 shadow-inner flex flex-col gap-4">
-                <pre className="whitespace-pre-wrap word-break">
-                  {pollingVuln?.fixLogBuffer || (activeTab === 'fixed' ? "No logs available." : "Initializing automated repair agent...\nConnecting to target...\n")}
-                  {!pollingVuln?.isFixed && activeTab !== 'fixed' && (
-                    <span className="animate-pulse">_</span>
-                  )}
-                  <div ref={bottomRef} />
-                </pre>
+              <div className="flex-1 bg-black rounded-lg border border-red-900/30 font-mono text-xs overflow-hidden p-2 text-green-400 shadow-inner flex flex-col relative">
+                <div ref={terminalRef} className="absolute inset-2" />
               </div>
 
               {(activeTab === 'fixed' || pollingVuln?.isFixed) && pollingVuln?.fixAgentReport && (
