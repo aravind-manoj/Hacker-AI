@@ -1,4 +1,5 @@
 import { ChevronRight, ShieldAlert, Cpu } from "lucide-react";
+import Link from "next/link";
 import RedParticles from "./ui/red-particles";
 
 export default function Hero() {
@@ -25,13 +26,13 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 font-mono">
-                        <button className="flex items-center justify-center gap-2 px-8 py-4 bg-red-600 text-white font-bold hover:bg-red-700 hover:shadow-[0_0_20px_rgba(255,0,0,0.4)] transition-all duration-300">
+                        <Link href="/register" className="flex items-center justify-center gap-2 px-8 py-4 bg-red-600 text-white font-bold hover:bg-red-700 hover:shadow-[0_0_20px_rgba(255,0,0,0.4)] transition-all duration-300">
                             Deploy Agent
                             <ChevronRight className="w-5 h-5" />
-                        </button>
-                        <button className="flex items-center justify-center gap-2 px-8 py-4 border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-all duration-300">
-                            Read Technical Specs
-                        </button>
+                        </Link>
+                        <Link href="/docs" className="flex items-center justify-center gap-2 px-8 py-4 border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-all duration-300">
+                            Documentation
+                        </Link>
                     </div>
                 </div>
 
