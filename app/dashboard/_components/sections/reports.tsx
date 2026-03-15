@@ -14,6 +14,9 @@ import {
     X,
     Loader2,
     ShieldAlert,
+    Shield,
+    Server,
+    Zap,
     Clock,
     ChevronRight,
     AlertTriangle,
@@ -180,29 +183,69 @@ function CreateModal({
     onClose: () => void;
     onCreated: () => void;
 }) {
+    const [activeTab, setActiveTab] = useState<"pentest" | "system">("pentest");
     const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [url, setUrl] = useState("");
+    const [selectedAttackId, setSelectedAttackId] = useState("");
+    const [selectedSystemId, setSelectedSystemId] = useState("");
 
-    const createMutation = trpc.reports.createReport.useMutation({
+    const { data: attacks = [], isLoading: attacksLoading } = trpc.pentester.getAttacks.useQuery(undefined, {
+        enabled: open,
+    });
+
+    const { data: systems = [], isLoading: systemsLoading } = trpc.systems.getSystems.useQuery(undefined, {
+        enabled: open,
+    });
+
+    const generateMutation = trpc.reports.generateReport.useMutation({
         onSuccess: () => {
-            toast.success("Report created successfully.");
+            toast.success("Report generation initiated.");
             onCreated();
-            onClose();
-            setName("");
-            setDescription("");
-            setUrl("");
+            handleClose();
         },
         onError: (err) => {
-            toast.error(err.message || "Failed to create report.");
+            toast.error(err.message || "Failed to generate report.");
         },
     });
+
+    const handleClose = () => {
+        onClose();
+        setActiveTab("pentest");
+        setName("");
+        setSelectedAttackId("");
+        setSelectedSystemId("");
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
-        createMutation.mutate({ name: name.trim(), description: description.trim(), url: url.trim() });
+
+        if (activeTab === "pentest") {
+            if (!selectedAttackId) {
+                toast.error("Please select an attack.");
+                return;
+            }
+            generateMutation.mutate({
+                type: "pentest",
+                name: name.trim(),
+                attackId: selectedAttackId,
+            });
+        } else {
+            if (!selectedSystemId) {
+                toast.error("Please select a system.");
+                return;
+            }
+            generateMutation.mutate({
+                type: "system",
+                name: name.trim(),
+                systemId: selectedSystemId,
+            });
+        }
     };
+
+    const TABS = [
+        { key: "pentest" as const, label: "Pentest Report", icon: Shield },
+        { key: "system" as const, label: "System Report", icon: Server },
+    ];
 
     return (
         <>
@@ -211,7 +254,7 @@ function CreateModal({
                     {/* Backdrop */}
                     <div
                         key="backdrop"
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
                     />
 
@@ -228,19 +271,52 @@ function CreateModal({
                                         <Plus className="w-4 h-4 text-red-500" />
                                     </div>
                                     <h2 className="font-bold text-base text-foreground uppercase tracking-wider">
-                                        New Report
+                                        Generate Report
                                     </h2>
                                 </div>
                                 <button
-                                    onClick={onClose}
+                                    onClick={handleClose}
                                     className="p-1.5 rounded hover:bg-red-900/20 text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
+                            {/* Dual Sliding Tab Bar */}
+                            <div className="relative px-6 pt-4">
+                                <div className="flex rounded-md border border-red-900/40 bg-background overflow-hidden relative">
+                                    {/* Sliding indicator */}
+                                    <div
+                                        className="absolute top-0 bottom-0 w-1/2 bg-red-600/15 border border-red-500/40 rounded-md transition-all duration-300 ease-in-out z-0"
+                                        style={{
+                                            left: activeTab === "pentest" ? "0%" : "50%",
+                                        }}
+                                    />
+
+                                    {TABS.map((tab) => {
+                                        const Icon = tab.icon;
+                                        const isActive = activeTab === tab.key;
+                                        return (
+                                            <button
+                                                key={tab.key}
+                                                type="button"
+                                                onClick={() => setActiveTab(tab.key)}
+                                                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${isActive
+                                                    ? "text-red-500"
+                                                    : "text-muted-foreground hover:text-foreground"
+                                                    }`}
+                                            >
+                                                <Icon className="w-3.5 h-3.5" />
+                                                {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Form */}
                             <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+                                {/* Report Name */}
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-red-500">
                                         Report Name <span className="text-red-600">*</span>
@@ -250,59 +326,107 @@ function CreateModal({
                                         required
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        placeholder="e.g. SQLi vulnerability on target.com"
+                                        placeholder={
+                                            activeTab === "pentest"
+                                                ? "e.g. SQLi Pentest — target.com"
+                                                : "e.g. System Audit — Prod DB-01"
+                                        }
                                         className="bg-background border border-red-900/40 rounded px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors"
                                     />
                                 </div>
 
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-red-500">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="Describe the vulnerability or findings..."
-                                        rows={3}
-                                        className="bg-background border border-red-900/40 rounded px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors resize-none"
-                                    />
-                                </div>
+                                {/* Tab-specific selector */}
+                                {activeTab === "pentest" ? (
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-red-500">
+                                            Select Attack <span className="text-red-600">*</span>
+                                        </label>
+                                        {attacksLoading ? (
+                                            <div className="flex items-center gap-2 py-3 text-muted-foreground text-xs">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" />
+                                                Loading attacks...
+                                            </div>
+                                        ) : attacks.length === 0 ? (
+                                            <p className="text-xs text-muted-foreground/60 py-2 italic">
+                                                No attacks found. Launch a pentest first.
+                                            </p>
+                                        ) : (
+                                            <select
+                                                value={selectedAttackId}
+                                                onChange={(e) => setSelectedAttackId(e.target.value)}
+                                                className="bg-background border border-red-900/40 rounded px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors appearance-none cursor-pointer"
+                                            >
+                                                <option value="" className="text-muted-foreground">
+                                                    — Select an attack —
+                                                </option>
+                                                {attacks.map((atk) => (
+                                                    <option key={atk.id} value={atk.id}>
+                                                        {atk.targetName ?? "Unnamed"} — {atk.status ?? "unknown"}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-red-500">
+                                            Select System <span className="text-red-600">*</span>
+                                        </label>
+                                        {systemsLoading ? (
+                                            <div className="flex items-center gap-2 py-3 text-muted-foreground text-xs">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" />
+                                                Loading systems...
+                                            </div>
+                                        ) : systems.length === 0 ? (
+                                            <p className="text-xs text-muted-foreground/60 py-2 italic">
+                                                No systems found. Add a target first.
+                                            </p>
+                                        ) : (
+                                            <select
+                                                value={selectedSystemId}
+                                                onChange={(e) => setSelectedSystemId(e.target.value)}
+                                                className="bg-background border border-red-900/40 rounded px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors appearance-none cursor-pointer"
+                                            >
+                                                <option value="" className="text-muted-foreground">
+                                                    — Select a system —
+                                                </option>
+                                                {systems.map((sys) => (
+                                                    <option key={sys.id} value={sys.id}>
+                                                        {sys.name ?? "Unnamed"} — {sys.sshHost}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                )}
 
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-red-500">
-                                        Target URL
-                                    </label>
-                                    <input
-                                        value={url}
-                                        onChange={(e) => setUrl(e.target.value)}
-                                        placeholder="https://target.com"
-                                        type="url"
-                                        className="bg-background border border-red-900/40 rounded px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-colors"
-                                    />
-                                </div>
-
+                                {/* Actions */}
                                 <div className="flex justify-end gap-2 mt-1">
                                     <button
                                         type="button"
-                                        onClick={onClose}
+                                        onClick={handleClose}
                                         className="px-4 py-2 text-sm border border-red-900/30 rounded text-muted-foreground hover:text-foreground hover:border-red-900/60 transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={createMutation.isPending || !name.trim()}
+                                        disabled={
+                                            generateMutation.isPending ||
+                                            !name.trim() ||
+                                            (activeTab === "pentest" ? !selectedAttackId : !selectedSystemId)
+                                        }
                                         className="px-5 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 text-white rounded shadow-[0_0_15px_rgba(220,38,38,0.3)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 uppercase tracking-wider"
                                     >
-                                        {createMutation.isPending ? (
+                                        {generateMutation.isPending ? (
                                             <>
                                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                Creating...
+                                                Generating...
                                             </>
                                         ) : (
                                             <>
-                                                <Plus className="w-3.5 h-3.5" />
-                                                Create
+                                                <Zap className="w-3.5 h-3.5" />
+                                                Generate
                                             </>
                                         )}
                                     </button>

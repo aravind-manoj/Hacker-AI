@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { report, user } from "@/db/schema";
 import { desc, eq, count, sql } from "drizzle-orm";
+import { inngest } from "@/inngest/client";
 
 export const reportsRouter = createTRPCRouter({
   // Get all reports for the authenticated user
@@ -112,5 +113,53 @@ export const reportsRouter = createTRPCRouter({
           sql`${report.id} = ${input.id} AND ${report.userId} = ${ctx.auth!.user.id}`
         );
       return { success: true };
+    }),
+
+  // Generate a report (Pentest or System) via Inngest → RabbitMQ
+  generateReport: protectedProcedure
+    .input(
+      z.object({
+        type: z.enum(["pentest", "system"]),
+        name: z.string().min(1, "Name is required").max(255),
+        attackId: z.string().optional(),
+        systemId: z.string().optional(),
+      }).refine(
+        (data) => {
+          if (data.type === "pentest") return !!data.attackId;
+          if (data.type === "system") return !!data.systemId;
+          return true;
+        },
+        { message: "attackId is required for pentest reports, systemId for system reports" }
+      )
+    )
+    .mutation(async ({ ctx, input }) => {
+      const id = crypto.randomUUID();
+      const description = input.type === "pentest"
+        ? "Pentest Report — Generated"
+        : "System Report — Generated";
+
+      const [newReport] = await ctx.db
+        .insert(report)
+        .values({
+          id,
+          name: input.name,
+          description,
+          url: null,
+          userId: ctx.auth!.user.id,
+        })
+        .returning();
+
+      await inngest.send({
+        name: "report/generate",
+        data: {
+          reportId: id,
+          type: input.type,
+          attackId: input.attackId ?? null,
+          systemId: input.systemId ?? null,
+          userId: ctx.auth!.user.id,
+        },
+      });
+
+      return newReport;
     }),
 });
