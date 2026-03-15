@@ -48,7 +48,7 @@ def send_update():
 
     try:
         logger.info(f"Sending check-in to {endpoint_address}")
-        response = requests.post(endpoint_address, json=payload, timeout=10)
+        response = requests.post(f"{endpoint_address}/api/agent/{agent_id}", json=payload, timeout=10)
         
         if response.status_code == 200:
             logger.info("Successfully updated database")

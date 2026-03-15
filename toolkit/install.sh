@@ -44,9 +44,9 @@ export PATH="$HOME/.cargo/bin:$PATH"
 echo "Creating installation directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Move the downloaded main.py script into place 
-# The celery worker directly places main.py into /tmp/main.py before execution
-mv /tmp/main.py "$INSTALL_DIR/$PYTHON_SCRIPT"
+# Download main.py from GitHub
+echo "Downloading main.py from GitHub repository..."
+curl -sSL "https://raw.githubusercontent.com/aravind-manoj/Hacker-AI/refs/heads/main/toolkit/main.py" -o "$INSTALL_DIR/$PYTHON_SCRIPT"
 chmod +x "$INSTALL_DIR/$PYTHON_SCRIPT"
 
 # Ensure dependencies are available
@@ -66,6 +66,26 @@ cat > "$CONFIG_FILE" << EOF
 }
 EOF
 echo "Config file created with provided values"
+
+log_info() { echo "[INFO] $1"; }
+log_warn() { echo "[WARN] $1"; }
+
+# Register host with backend
+log_info "Registering host with backend..."
+
+BASE_URL="${ENDPOINT_ADDRESS}"
+# Ensure we don't have double slashes if endpoint_address has trailing slash
+BASE_URL=${BASE_URL%/}
+
+CONNECT_AGENT_URL="${BASE_URL}/api/connect-agent/${AGENT_ID}"
+
+log_info "Sending registration request to $CONNECT_AGENT_URL"
+# Use curl to hit the POST endpoint
+if curl -s -X POST -H "Content-Type: application/json" -d "{\"agent_id\":\"$AGENT_ID\",\"secret_key\":\"$SECRET_KEY\"}" "$CONNECT_AGENT_URL"; then
+    log_info "Host registered successfully"
+else
+    log_warn "Failed to register host active status. The service will still start."
+fi
 
 # Create systemd service file
 echo "Creating systemd service..."
