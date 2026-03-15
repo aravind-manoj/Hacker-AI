@@ -28,6 +28,26 @@ class DBManager:
 
   def update_vm_status(self, subagent_id: str, status: str):
     self.supabase.table("attack_vm").update({"status": status}).eq("subagent_id", subagent_id).execute()
+  
+  def update_system_buffer(self, system_id: str, buffer: str):
+    self.supabase.table("system").update({"deploy_buffer": buffer}).eq("id", system_id).execute()
+  
+  def update_system_status(self, system_id: str, status: str):
+    self.supabase.table("system").update({"status": status}).eq("id", system_id).execute()
+
+  def update_vuln_buffer(self, vuln_id: str, buffer: str):
+    self.supabase.table("vulnerability").update({"fix_log_buffer": buffer}).eq("id", vuln_id).execute()
+
+  def update_vuln_status(self, vuln_id: str, is_fixed: bool, report: str, status: str = None):
+    update_data = {
+      "is_fixed": is_fixed,
+      "fix_agent_report": report
+    }
+    if status is not None:
+      update_data["status"] = status
+    if is_fixed:
+      update_data["fixed_at"] = datetime.datetime.now().isoformat()
+    self.supabase.table("vulnerability").update(update_data).eq("id", vuln_id).execute()
 
   def append_completed_step(self, subagent_id: str, step: str):
     result = self.supabase.table("attack_vm").select("completed_steps").eq("subagent_id", subagent_id).execute()

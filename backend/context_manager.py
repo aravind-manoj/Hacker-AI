@@ -3,6 +3,7 @@ from langchain_core.messages import (
   AIMessage,
   ToolMessage,
   SystemMessage,
+  RemoveMessage,
 )
 from logger import log_info, log_error
 
@@ -12,90 +13,87 @@ class ContextManager:
 
   Strategy:
   - Keep the system prompt + first user message (task assignment) always.
-  - When message count exceeds the threshold, summarize older messages
-    using the LLM and replace them with a compact summary.
-  - Always preserve recent messages for continuity.
+  - Retain the reasoning (content) of all AIMessages to preserve the train of thought.
+  - For tool calls and their outputs (ToolMessages), keep only the most recent N
+    (e.g., 2) for each specific tool type.
+  - Remove older tool calls and their results from the state. This drastically 
+    reduces token usage while preventing the agent from losing its context.
   """
 
-  # Thresholds
-  MAX_MESSAGES = 20           # trigger summarization when exceeded
-  KEEP_RECENT = 10            # always keep the last N messages
-  SUMMARIZE_BATCH_SIZE = 20   # how many older messages to summarize at once
+  MAX_MESSAGES = 20           # Required threshold for main/subagent limits
+  KEEP_TOOL_CALLS_PER_TYPE = 3
 
   def __init__(self, llm):
+    # LLM is preserved here for backward compatibility
     self.llm = llm
-    self._summary_cache: str = ""  # running summary of older context
 
   def trim_context(self, messages: list) -> list:
+    """
+    Returns a list of message updates to apply to the LangGraph state.
+    - Preserved messages are returned as-is.
+    - Dropped ToolMessages are replaced with RemoveMessage(id=...)
+    - Spliced AIMessages (where old tool calls are removed) are returned with matching IDs
+      so they overwrite the swollen old messages.
+    """
     if len(messages) <= self.MAX_MESSAGES:
       return messages
 
-    # Separate preserved and trimmable messages
-    preserved_head = []
-    rest = []
+    tool_counts = {}
+    tool_call_ids_to_keep = set()
 
+    # Determine which ToolMessages to keep (most recent N per tool name)
+    for msg in reversed(messages):
+      if isinstance(msg, ToolMessage):
+        count = tool_counts.get(msg.name, 0)
+        if count < self.KEEP_TOOL_CALLS_PER_TYPE:
+          tool_call_ids_to_keep.add(msg.tool_call_id)
+          tool_counts[msg.name] = count + 1
+
+    updates = []
+    
     for i, msg in enumerate(messages):
+      # 1. System messages are always kept
       if isinstance(msg, SystemMessage):
-        preserved_head.append(msg)
-      elif i <= 1:  # keep the first human message (task assignment)
-        preserved_head.append(msg)
-      else:
-        rest.append(msg)
+        updates.append(msg)
+        continue
+        
+      # 2. First Human message (task definition) is always kept
+      if isinstance(msg, HumanMessage) and i <= 2:
+        updates.append(msg)
+        continue
+        
+      # 3. Other Human messages
+      if isinstance(msg, HumanMessage):
+        updates.append(msg)
+        continue
 
-    if len(rest) <= self.KEEP_RECENT:
-      return messages  # nothing to trim
+      # 4. ToolMessages checking
+      if isinstance(msg, ToolMessage):
+        if msg.tool_call_id in tool_call_ids_to_keep:
+          updates.append(msg)
+        else:
+          # Actually remove it from LangGraph state to save tokens
+          updates.append(RemoveMessage(id=msg.id))
+        continue
+        
+      # 5. AIMessages pruning
+      if isinstance(msg, AIMessage):
+        has_tools = hasattr(msg, 'tool_calls') and msg.tool_calls
+        if has_tools:
+          new_tool_calls = [tc for tc in msg.tool_calls if tc['id'] in tool_call_ids_to_keep]
+          if len(new_tool_calls) == len(msg.tool_calls):
+            updates.append(msg)
+          else:
+            # Overwrite the AIMessage in state with pruned tool_calls
+            content = msg.content if msg.content else "[Older tool calls removed to save context window]"
+            new_msg = AIMessage(
+              content=content,
+              tool_calls=new_tool_calls,
+              id=msg.id
+            )
+            updates.append(new_msg)
+        else:
+          updates.append(msg)
 
-    # Split: old messages to summarize | recent messages to keep
-    to_summarize = rest[:-self.KEEP_RECENT]
-    to_keep = rest[-self.KEEP_RECENT:]
-    summary = self._summarize_messages(to_summarize)
-    result = preserved_head.copy()
-    if summary:
-      result.append(HumanMessage(content=f"[CONTEXT SUMMARY of previous {len(to_summarize)} interactions]\n{summary}"))
-    result.extend(to_keep)
-
-    log_info(f"Trimmed {len(messages)} → {len(result)} messages "
-             f"(summarized {len(to_summarize)} old messages)")
-
-    return result
-
-  def _summarize_messages(self, messages: list) -> str:
-    try:
-      # Build a text representation of the messages to summarize
-      conversation_text = []
-      for msg in messages:
-        role = "Assistant" if isinstance(msg, AIMessage) else \
-               "Tool" if isinstance(msg, ToolMessage) else "User"
-        content = msg.content if hasattr(msg, 'content') and msg.content else ""
-        if content:
-          # Truncate very long tool outputs
-          if isinstance(msg, ToolMessage) and len(content) > 500:
-            content = content[:500] + "... [truncated]"
-          conversation_text.append(f"{role}: {content}")
-
-      if not conversation_text:
-        return self._summary_cache
-
-      full_text = "\n".join(conversation_text)
-
-      summary_prompt = [
-        SystemMessage(content=(
-          "You are a concise summarizer. Summarize the following pentesting agent "
-          "conversation into a brief, actionable summary. Focus on:\n"
-          "- Commands that were executed and their key results\n"
-          "- Important findings (open ports, vulnerabilities, errors)\n"
-          "- Current state and what was being attempted\n"
-          "Keep it under 300 words. Be factual and specific."
-        )),
-        HumanMessage(content=f"Previous context summary:\n{self._summary_cache}\n\n"
-                             f"New conversation to summarize:\n{full_text}")
-      ]
-
-      response = self.llm.invoke(summary_prompt)
-      self._summary_cache = response.content
-      return self._summary_cache
-
-    except Exception as e:
-      log_error(f"Summarization failed: {e}")
-      # Fallback: just keep the cached summary
-      return self._summary_cache
+    log_info(f"Context trimmed: scheduled {len(updates)} state updates. Tool retention: {tool_counts}")
+    return updates

@@ -4,6 +4,7 @@ import ssl
 import time
 import threading
 import redis
+import tempfile
 from celery import Celery
 from dotenv import load_dotenv
 from agent import AgentManager
@@ -11,6 +12,8 @@ from sub_agent import SubAgent
 from context_manager import ContextManager
 from logger import log_info, log_warn, log_error
 from uuid import uuid4
+from ssh_controller import SSHController
+from fix_agent import FixAgent
 
 load_dotenv()
 
@@ -165,3 +168,36 @@ def attack(attack_id: str, target_list: list[str], attack_vectors: list[str], no
   result = ai.run(target_list, attack_vectors, note)
   log_info(f"Result:\n{result}", agent_id="main")
   return result
+
+@app.task(name="worker.fix", result_expires=86400)
+def fix(vuln_id: str, title: str, description: str, severity: str, cve_id: str, system_id: str):
+  log_info(f"Starting FixAgent for vuln_id {vuln_id} on system {system_id}", agent_id=vuln_id)
+  
+  # Fetch system details
+  db = DBManager()
+  result = db.supabase.table("system").select("*").eq("id", system_id).execute()
+  
+  if not result.data:
+    log_error(f"System {system_id} not found", agent_id=vuln_id)
+    db.update_vuln_status(vuln_id, is_fixed=False, report="System not found in database.")
+    return "System not found"
+    
+  system_data = result.data[0]
+  
+  agent = FixAgent(
+    vuln_id=vuln_id,
+    title=title,
+    description=description,
+    severity=severity,
+    cve_id=cve_id,
+    system_id=system_id,
+    ssh_host=system_data.get("sshHost"),
+    ssh_port=system_data.get("sshPort", "22"),
+    ssh_username=system_data.get("sshUsername"),
+    ssh_password=system_data.get("sshPassword"),
+    ssh_key=system_data.get("sshKey")
+  )
+  
+  report = agent.run()
+  log_info(f"FixAgent completed with report:\n{report}", agent_id=vuln_id)
+  return report

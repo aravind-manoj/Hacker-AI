@@ -133,6 +133,7 @@ export const system = pgTable("system", {
 	sshUsername: text("ssh_username"),
 	sshPassword: text("ssh_password"),
 	sshKey: text("ssh_key"),
+	secretKey: text("secret_key"),
 	status: text(),
 }, (table) => [
 	foreignKey({
@@ -155,6 +156,8 @@ export const vulnerability = pgTable("vulnerability", {
 	isFixed: boolean("is_fixed"),
 	fixedAt: timestamp("fixed_at", { withTimezone: true, mode: 'string' }),
 	fixLogBuffer: text("fix_log_buffer"),
+	fixAgentReport: text("fix_agent_report"),
+	status: text(),
 }, (table) => [
 	foreignKey({
 		columns: [table.systemId],

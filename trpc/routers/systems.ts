@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { system } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
+import { inngest } from "@/inngest/client";
 
 export const systemsRouter = createTRPCRouter({
   getSystems: protectedProcedure.query(async ({ ctx }) => {
@@ -20,22 +22,30 @@ export const systemsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const newSystem = await ctx.db
-        .insert(system)
-        .values({
-          id: crypto.randomUUID(),
-          userId: ctx.auth!.user.id,
-          name: input.name,
-          sshHost: input.sshHost,
-          sshPort: input.sshPort,
-          sshUsername: input.sshUsername,
-          sshPassword: input.sshPassword || null,
-          sshKey: input.sshKey || null,
-          status: "connected", // Mocking initial connection status
-        })
-        .returning();
+      const systemId = uuidv4();
+      const secretKey = uuidv4();
 
-      return newSystem[0];
+      await ctx.db.insert(system).values({
+        id: systemId,
+        userId: ctx.auth!.user.id,
+        name: input.name,
+        sshHost: input.sshHost,
+        sshPort: input.sshPort,
+        sshUsername: input.sshUsername,
+        sshPassword: input.sshPassword,
+        sshKey: input.sshKey,
+        secretKey: secretKey,
+        status: "pending"
+      });
+
+      return { id: systemId, secretKey };
+    }),
+
+  getSystem: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db.select().from(system).where(eq(system.id, input.id));
+      return result[0];
     }),
 
   deleteSystem: protectedProcedure

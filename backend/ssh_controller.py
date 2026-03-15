@@ -100,7 +100,7 @@ class SSHController:
 
             if needs_update:
                 try:
-                    self.db.update_vm_buffer(self.tag, buffer_snapshot)
+                    self.db.update_system_buffer(self.tag, buffer_snapshot)
                     log_info("Updating DB...", agent_id=self.tag)
                 except Exception as e:
                     log_error(f"Failed to update DB: {e}", agent_id=self.tag)

@@ -498,10 +498,17 @@ class SubAgent:
   def stop(self):
     try:
       self.stop_event.set()
-      self.controller.stop()
-      if self.state["status"] == "running":
+      if self.state["status"] in ["starting", "running"]:
         self.state["status"] = "stopped"
-        self.state["summary"] = self.state.get("summary") or "Max iterations reached without explicit completion."
-        self.db.update_vm_status(self.id, "stopped")
-    except Exception:
-      pass
+        self.state["summary"] = self.state.get("summary") or "Task stopped by user."
+        try:
+          self.db.update_vm_status(self.id, "stopped")
+        except Exception as e:
+          log_warn(f"Failed to update DB on stop: {e}", agent_id=self.id)
+    except Exception as e:
+      log_warn(f"Error during stop state update: {e}", agent_id=self.id)
+      
+    try:
+      self.controller.stop()
+    except Exception as e:
+      log_warn(f"Error stopping controller: {e}", agent_id=self.id)

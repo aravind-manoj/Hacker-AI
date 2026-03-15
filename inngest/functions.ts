@@ -16,6 +16,21 @@ const attackWorkflow = inngest.createFunction(
   },
 );
 
+const fixWorkflow = inngest.createFunction(
+  { id: "fix" },
+  { event: "fix/start" },
+  async ({ event, step }) => {
+    const taskId = await step.run("publish-to-rabbitmq", async () => {
+      const taskId = await publishToRabbitMQ({
+        taskName: "worker.fix",
+        args: [event.data.id, event.data.title, event.data.description, event.data.severity, event.data.vuln_id, event.data.systemId],
+      });
+      return taskId;
+    })
+    return taskId;
+  },
+);
+
 const reportGenerateWorkflow = inngest.createFunction(
   { id: "report-generate" },
   { event: "report/generate" },
@@ -34,7 +49,7 @@ const reportGenerateWorkflow = inngest.createFunction(
       return taskId;
     });
     return taskId;
-  },
+  }
 );
 
-export const functions = [attackWorkflow, reportGenerateWorkflow];
+export const functions = [attackWorkflow, fixWorkflow, reportGenerateWorkflow];
