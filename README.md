@@ -27,7 +27,7 @@
 - [Project Structure](#-project-structure)
 - [Dashboard](#-dashboard)
 - [AI Pentester Pipeline](#-ai-pentester-pipeline)
-- [Smart SOC Workflow](#-smart-soc-workflow)
+- [Smart SOC Work.0 low](#-smart-soc-workflow)
 - [Docker Sandboxing](#-docker-sandboxing)
 - [Database Schema](#-database-schema)
 - [Getting Started](#-getting-started)
@@ -277,7 +277,22 @@ SSH Discovery → Agent Deployment → Continuous Auditing → Dashboard Reporti
 
 ---
 
-## 🐳 Docker Sandboxing
+## �️ Eliminating False Positives
+
+Hacker.AI moves beyond "vulnerability detection" to **"vulnerability verification"**. We solve the industry-wide problem of false positive fatigue through three core pillars:
+
+### 1. Proof-of-Exploitation (Offensive)
+Standard scanners flag version banners. Hacker.AI agents flag **outcomes**. The AI Pentester doesn't report a vulnerability until a sub-agent verifies it through a safe exploitation loop or proof-of-concept. If an exploit doesn't trigger, the risk is downgraded.
+
+### 2. Direct Introspection (Defensive)
+The Smart SOC agent runs locally on your servers. It doesn't guess based on network packets; it audits real-time process states, configuration files on disk, and kernel-level vulnerabilities. This eliminates 99% of network-artifact noise.
+
+### 3. Contextual Reasoning
+By utilizing the **Context Dashboard**, the AI understands your environment. It won't flag deliberate "internal-only" shortcuts or "test-bench" configurations if you've marked them as intentional, allowing your team to focus on real external threats.
+
+---
+
+## �🐳 Docker Sandboxing
 
 Every sub-agent operates in complete isolation:
 

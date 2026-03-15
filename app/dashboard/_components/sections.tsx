@@ -62,12 +62,12 @@ export const Sections = [
     section: <ReportsSection />,
     icon: <FileText />,
   },
-  // {
-  //   title: "Context",
-  //   href: "/context",
-  //   section: <ContextSection />,
-  //   icon: <Globe />,
-  // },
+  {
+    title: "Context",
+    href: "/context",
+    section: <ContextSection />,
+    icon: <Globe />,
+  },
   {
     title: "Settings",
     href: "/settings",
