@@ -77,3 +77,20 @@ class DBManager:
 
   def update_attack_findings(self, attack_id: str, report: str, vulnerabilities: list[str]):
     self.supabase.table("attack").update({"report": report, "vulnerabilities": vulnerabilities}).eq("id", attack_id).execute()
+
+  def get_attack_user_id(self, attack_id: str) -> str | None:
+    result = self.supabase.table("attack").select("user_id").eq("id", attack_id).execute()
+    if result.data:
+      return result.data[0].get("user_id")
+    return None
+
+  def create_report(self, attack_id: str, name: str, description: str, url: str):
+    user_id = self.get_attack_user_id(attack_id)
+    if user_id:
+      self.supabase.table("report").insert({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "name": name,
+        "description": description,
+        "url": url
+      }).execute()

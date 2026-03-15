@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../init";
 import { report, user } from "@/db/schema";
 import { desc, eq, count, sql } from "drizzle-orm";
 import { inngest } from "@/inngest/client";
+import { v4 as uuidv4 } from 'uuid';
 
 export const reportsRouter = createTRPCRouter({
   // Get all reports for the authenticated user
@@ -88,7 +89,7 @@ export const reportsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const id = crypto.randomUUID();
+      const id = uuidv4();
       const [newReport] = await ctx.db
         .insert(report)
         .values({

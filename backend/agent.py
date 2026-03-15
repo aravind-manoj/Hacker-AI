@@ -1,6 +1,7 @@
 import os
 import time
 import threading
+import base64
 from uuid import uuid4
 from typing import Annotated
 from langchain_groq import ChatGroq
@@ -14,6 +15,8 @@ from prompts import MAIN_AGENT_PROMPT
 from sub_agent import SubAgent
 from db_manager import DBManager
 from logger import log_info
+from report_generator import generate_report
+from s3 import s3
 
 @tool("create_subagent")
 def create_subagent(
@@ -190,22 +193,75 @@ def stop_subagent(
 @tool("finalize_report")
 def finalize_report(
   report: str,
-  vulnerabilities: list[str],
+  vulnerabilities: list[dict],
+  target: str = "Unknown Target",
   config: Annotated[RunnableConfig, InjectedToolArg] = None,
 ) -> str:
-  """Submit the final compiled pentesting report. ONLY CALL THIS TOOL WHEN ALL SUB-AGENTS HAVE COMPLETED THEIR TASKS.
+  """Submit the final compiled pentesting report as a rich, colorful HTML + PDF document.
+  ONLY CALL THIS TOOL WHEN ALL SUB-AGENTS HAVE COMPLETED THEIR TASKS.
   DO NOT call this if any sub-agent is still running.
 
   Use `get_subagent_findings` to collect all findings before calling this.
 
+  The report will be rendered as a professional HTML document with colorful severity
+  badges, CVE/CVSS ratings, proof of concept, proof of work, and remediation steps,
+  and then converted to a PDF automatically.
+
   Args:
-    report: The comprehensive final report combining findings from all sub-agents
-    vulnerabilities: The list of vulnerabilities found
+    report: Executive summary + full narrative report (800-2000 words) combining
+            findings from all sub-agents. Write in a professional, detailed style.
+    vulnerabilities: Structured list of vulnerability dicts. Each dict MUST contain:
+      - title (str): Short name of the vulnerability
+      - severity (str): One of Critical / High / Medium / Low
+      - cve (str): CVE identifier (e.g. CVE-2021-44228) or 'N/A'
+      - cvss (str): CVSS score string (e.g. '9.8')
+      - description (str): Detailed technical description of the vulnerability
+      - proof_of_concept (str): Exact commands, payloads, or steps used to exploit
+      - proof_of_work (str): Actual tool output / evidence confirming exploitation
+      - how_to_fix (str): Step-by-step remediation/mitigation instructions
+    target: The target host / IP / URL that was assessed
   """
-  attack_id = config["configurable"]["attack_id"]
-  db = DBManager()
-  db.update_attack_findings(attack_id, report, vulnerabilities)
-  return "Final report submitted. Assessment complete."
+  try:
+    attack_id = config["configurable"]["attack_id"]
+    db = DBManager()
+
+    # Generate colorful HTML report and convert to PDF (WeasyPrint, pure Python)
+    html_str, pdf_bytes = generate_report(
+      target=target,
+      report=report,
+      vulnerabilities=vulnerabilities,
+      full_report=report,
+    )
+
+    # Persist HTML to existing `report` field in Supabase
+    vuln_titles = [v.get("title", str(v)) for v in vulnerabilities]
+    db.update_attack_findings(attack_id, html_str, vuln_titles)
+
+    # Save the PDF to disk and store the path in Supabase (report_pdf column)
+    pdf_filename = f"report_{attack_id}.pdf"
+    pdf_path = os.path.join(os.path.dirname(__file__), "reports", pdf_filename)
+    os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+    with open(pdf_path, "wb") as f:
+      f.write(pdf_bytes)
+
+    # Upload PDF to R2 bucket
+    s3_key = f"reports/{pdf_filename}"
+    try:
+      s3.upload_object(pdf_bytes, s3_key)
+      pdf_url = s3.get_object_url(s3_key)
+      
+      # Create an entry in the 'report' table
+      desc = report[:200] + "..." if len(report) > 200 else report
+      db.create_report(attack_id, f"Pentest Report - {target}", desc, pdf_url)
+    except Exception as e:
+      log_info(f"Failed to upload report to R2 or create report entry: {e}", agent_id="main")
+
+    log_info(f"Report generated: HTML ({len(html_str)} chars), PDF ({len(pdf_bytes)} bytes) → {pdf_path}", agent_id="main")
+    return f"Final report submitted. HTML + PDF generated (PDF saved to {pdf_path}). Assessment complete."
+
+  except Exception as e:
+    log_info(f"Report generation error: {e}", agent_id="main")
+    return f"Error generating report: {str(e)}"
 
 @tool("wait")
 def wait(
