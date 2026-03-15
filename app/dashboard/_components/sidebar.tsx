@@ -55,16 +55,18 @@ export default function DashboardSidebar() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[80%] h-[30%] bg-red-500/5 dark:bg-red-900/20 blur-[80px] rounded-full" />
       </div>
 
-      <SidebarHeader className="relative z-10 bg-transparent">
-        <Link className="flex w-full justify-center items-center gap-2 cursor-pointer py-4" href={"/dashboard"}>
-          <Image
-            src={resolvedTheme === "dark" ? "/logo.svg" : "/logo_black.svg"}
-            alt="Hacker.AI Logo"
-            className="w-[250px] h-auto"
-            width={250}
-            height={45}
-            priority
-          />
+      <SidebarHeader className="flex w-full items-center justify-center bg-transparent px-0 py-2">
+        <Link href="/dashboard" className="flex w-full justify-center">
+          <div className="mx-auto flex h-20 w-full items-center justify-center">
+            <Image
+              src={resolvedTheme === "dark" ? "/logo.svg" : "/logo_black.svg"}
+              alt="Hacker.AI Logo"
+              width={250}
+              height={45}
+              priority
+            />
+          </div>
+
         </Link>
       </SidebarHeader>
       <SidebarContent className="relative z-10 bg-transparent">
@@ -78,7 +80,7 @@ export default function DashboardSidebar() {
                   key={item.title}
                   className={cn(
                     "cursor-pointer p-5 mt-1 text-base transition-all duration-200 rounded-md",
-                    active 
+                    active
                       ? "font-bold bg-sidebar-accent text-sidebar-accent-foreground shadow-sm border-l-2 border-red-600"
                       : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   )}
