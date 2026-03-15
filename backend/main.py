@@ -12,7 +12,6 @@ from sub_agent import SubAgent
 from context_manager import ContextManager
 from logger import log_info, log_warn, log_error
 from uuid import uuid4
-from ssh_controller import SSHController
 from fix_agent import FixAgent
 
 load_dotenv()
